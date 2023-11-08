@@ -1,1 +1,0 @@
-# trendz-api
