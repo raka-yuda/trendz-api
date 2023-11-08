@@ -1,0 +1,23 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@playwright/test": "^1.38.1",
+    "@the-convocation/twitter-scraper": "^0.8.1",
+    "axios": "^1.6.0",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.3"
+  },
+  "name": "twitter-scrape-etl",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/pg": "^8.10.7"
+  }
+}

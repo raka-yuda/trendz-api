@@ -1,0 +1,4 @@
+.env
+node_modules
+src/data/*.json
+src/data/*.csv
