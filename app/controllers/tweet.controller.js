@@ -1,6 +1,6 @@
 const db = require("../models");
 const { responseApiUtil } = require("../utils");
-const ClientCode = require("../config/constants.config").CLIENT_CODE;
+const { CLIENT_CODE: ClientCode, CHART_TYPE } = require("../config/constants.config");
 
 const Tweet = db.tweet;
 const Op = db.Sequelize.Op;
@@ -105,7 +105,6 @@ exports.findAll = async (req, res) => {
       status: 500,
       clientCode: ClientCode.FAILED_FETCH,
       message: err.message || "Some error occurred while retrieving Tweet.",
-      data
     })
   }
 };
@@ -223,6 +222,102 @@ exports.delete = (req, res) => {
         message: `Could not delete Tweet with id=${id}`,
       })
     });
+};
+
+// Delete all Tweet from the database.
+exports.chart = async (req, res) => {
+  const {
+    type, 
+    page, 
+    limit,
+    requestId,
+    requestDate
+  } = req.query;
+
+  try {
+    
+    if (!type) {
+      throw new Error('Bad Request')
+    }
+
+    let responseQuery;
+
+    if (type === CHART_TYPE.GROUPING_BY_SENTIMENT) {
+
+      if (!type) {
+        throw new Error('Bad Request')
+      }
+
+      let query = `select
+          count(*) as count,
+          sentiment,
+          tt.topic,
+          tsr.query,
+          tsr.topic_id,
+          tsr.id "request_id"
+          from tweets
+      inner join trending_topics tt on tt.id = tweets.topic_id
+      inner join topics_scrape_request tsr on tsr.id = tweets.topic_scrape_request `
+
+      if (requestId) query += `where tsr.id = :requestId `
+
+      query += `group by sentiment, tt.topic, tsr.query, tsr.topic_id, tsr.id order by count desc`
+
+      const sentimentResult = await db.sequelize.query(query,
+        {
+          replacements: { requestId: requestId ?? '' },
+          type: db.sequelize.SELECT
+        }
+      );
+      responseQuery = sentimentResult[0]
+    }
+
+    if (type === CHART_TYPE.COUNT_TRENDING_TOPIC_APPEARANCES) {
+      const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+      // Test if the dateString matches the expected format
+      if (!dateFormatRegex.test(requestDate)) {
+        throw new Error('Invalid date format. Please use the format yyyy-mm-dd.');
+      }
+
+      const trendsResult = await db.sequelize.query(
+        `SELECT 
+          topic, 
+          COUNT(1) as count
+          FROM trending_topics
+          WHERE DATE(created_at) = :requestDate
+          GROUP BY topic
+          ORDER BY count desc
+          LIMIT 10`,
+        {
+          replacements: { requestDate: requestDate },
+          type: db.sequelize.SELECT
+        }
+      );
+      responseQuery = trendsResult[0]
+    }
+
+    if (!res) {
+      throw new Error('Data Not Found')
+    }
+
+    responseApiUtil(res, {
+      success: true,
+      status: 200,
+      clientCode: ClientCode.SUCCESS_FETCH,
+      message: ClientCode.SUCCESS_FETCH,
+      data: responseQuery
+    })
+
+  } catch (err) {
+    console.log(err)
+    responseApiUtil(res, {
+      success: false,
+      status: 500,
+      clientCode: ClientCode.FAILED_FETCH,
+      message: err.message || "Some error occurred while retrieving Tweet Chart.",
+    })
+  }
 };
 
 // Delete all Tweet from the database.

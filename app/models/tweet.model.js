@@ -29,7 +29,7 @@ module.exports = (sequelize, Sequelize) => {
         },
       },
       tweet: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
       },
       sentiment: {
         type: DataTypes.STRING,

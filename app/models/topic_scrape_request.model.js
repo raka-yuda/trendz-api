@@ -19,11 +19,18 @@ module.exports = (sequelize) => {
           key: "id",
         },
       },
-      // Status: IN_QUEUE | RUNNING | SUCCESSED | FAILED
+      // Status: IN_QUEUE | IN_PROGRESS | FINISHED | FAILED
       status: {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'IN_QUEUE'
+      },
+      tweets_limit: {
+        type: DataTypes.INTEGER,
+        field: 'tweets_limit'
+      },
+      metadata: {
+        type: DataTypes.JSON,
       },
       last_running: {
         type: DataTypes.DATE,

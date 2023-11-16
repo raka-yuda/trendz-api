@@ -23,6 +23,11 @@ module.exports = function (app) {
   );
 
   app.get(
+    "/api/tweets/chart",
+    controller.chart
+  );
+
+  app.get(
     "/api/tweets/:id",
     controller.findOne
   );
