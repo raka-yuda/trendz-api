@@ -3,7 +3,12 @@ const { responseApiUtil } = require("../utils");
 const ClientCode = require("../config/constants.config").CLIENT_CODE;
 
 const TopicScrapeRequest = db.topicScrapeRequest;
+const TrendingTopic = db.trendingTopic;
 const Op = db.Sequelize.Op;
+
+// Define associations
+TrendingTopic.hasMany(TopicScrapeRequest, {foreignKey: 'topic_id'});
+TopicScrapeRequest.belongsTo(TrendingTopic, {foreignKey: 'topic_id'});
 
 // Create and Save a new Scrape Request
 exports.create = (req, res) => {
@@ -18,12 +23,21 @@ exports.create = (req, res) => {
     return;
   }
 
+  const {
+    tweets_limit = 10,
+    topic_id,
+    status,
+    last_running,
+    query,
+  } = req.body;
+
   // Create a Scrape Request
   const trend = {
-    topic_id: req.body.topic_id,
-    status: req.body.status,
-    last_running: req.body.last_running,
-    query: req.body.query,
+    tweets_limit: tweets_limit,
+    topic_id: topic_id,
+    status: status,
+    last_running: last_running,
+    query: query,
   };
 
   // Save Trending Topic in the database
@@ -48,25 +62,58 @@ exports.create = (req, res) => {
 };
 
 // Retrieve all Scrape Request from the database.
-exports.findAll = (req, res) => {
-  TopicScrapeRequest.findAll({})
-    .then((data) => {
-      responseApiUtil(res, {
-        success: true,
-        status: 200,
-        clientCode: ClientCode.SUCCESS_FETCH,
-        message: ClientCode.SUCCESS_FETCH,
-        data
-      })
-    })
-    .catch((err) => {
-      responseApiUtil(res, {
-        success: false,
-        status: 500,
-        clientCode: ClientCode.FAILED_FETCH,
-        message: err.message || "Some error occurred while retrieving Scrape Request.",
-      })
+exports.findAll = async (req, res) => {
+  const { 
+    page, 
+    limit,
+    topicId
+  } = req.query;
+
+  const options = {
+    page: page || 1,
+    limit: limit || 10, // Default to 10 items per page
+  };
+
+  const whereClause = {};
+
+  if (topicId) {
+    whereClause.topic_id = topicId;
+  }
+
+  try {
+    const { count, rows } = await TopicScrapeRequest.findAndCountAll({
+      offset: (options.page - 1) * options.limit,
+      limit: options.limit,
+      order: [['created_at', 'DESC NULLS LAST']],
+      where: whereClause,
+      include: [{
+        model: TrendingTopic,
+        required: true
+       }]
     });
+    
+    const data = {
+      items: rows,
+      totalItems: count,
+      currentPage: options.page,
+      totalPages: Math.ceil(count / options.limit),
+    }
+
+    responseApiUtil(res, {
+      success: true,
+      status: 200,
+      clientCode: ClientCode.SUCCESS_FETCH,
+      message: ClientCode.SUCCESS_FETCH,
+      data
+    })
+  } catch (err) {
+    responseApiUtil(res, {
+      success: false,
+      status: 500,
+      clientCode: ClientCode.FAILED_FETCH,
+      message: err.message || "Some error occurred while retrieving Scrape Request.",
+    })
+  }
 };
 
 // Find a single Scrape Request with an id

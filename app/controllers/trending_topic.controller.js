@@ -80,7 +80,6 @@ exports.findAll = async (req, res) => {
       status: 500,
       clientCode: ClientCode.FAILED_FETCH,
       message: err.message || "Some error occurred while retrieving Trend.",
-      data
     })
   }
 };
