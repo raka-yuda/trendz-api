@@ -66,7 +66,8 @@ exports.findAll = async (req, res) => {
   const { 
     page, 
     limit,
-    topicId
+    topicId,
+    status
   } = req.query;
 
   const options = {
@@ -78,6 +79,10 @@ exports.findAll = async (req, res) => {
 
   if (topicId) {
     whereClause.topic_id = topicId;
+  }
+
+  if (status) {
+    whereClause.status = status;
   }
 
   try {
