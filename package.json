@@ -1,7 +1,7 @@
 {
-  "name": "trends-sentiment-app",
+  "name": "trendz-api",
   "version": "1.0.0",
-  "description": "Trends sentiment dashboard app",
+  "description": "Trendz API - Trending Sentiment App API",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
