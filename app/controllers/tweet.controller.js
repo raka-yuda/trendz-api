@@ -224,7 +224,7 @@ exports.delete = (req, res) => {
     });
 };
 
-// Delete all Tweet from the database.
+// Showing chart data for graph analytics
 exports.chart = async (req, res) => {
   const {
     type, 
@@ -243,10 +243,6 @@ exports.chart = async (req, res) => {
     let responseQuery;
 
     if (type === CHART_TYPE.GROUPING_BY_SENTIMENT) {
-
-      if (!type) {
-        throw new Error('Bad Request')
-      }
 
       let query = `select
           count(*) as count,
@@ -295,6 +291,68 @@ exports.chart = async (req, res) => {
         }
       );
       responseQuery = trendsResult[0]
+    }
+
+    if (type === CHART_TYPE.COUNT_SCRAPE_SENTIMENT_PER_DAY) {
+      const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+      // Test if the dateString matches the expected format
+      // if (!dateFormatRegex.test(requestDate)) {
+      //   throw new Error('Invalid date format. Please use the format yyyy-mm-dd.');
+      // }
+
+      const query = `
+        with
+          data_labels_sentiment AS (
+              SELECT DISTINCT sentiment
+              FROM tweets
+              where sentiment is not null
+          ),
+          data_sentiment_count_per_day as (
+              select
+                  count(1) as count,
+                  sentiment,
+                  DATE(created_at) as created_at
+              from tweets
+              where
+                  sentiment is not null
+              group by
+                  sentiment,
+                  DATE(created_at)
+              order by created_at desc),
+          data_all_dates AS (
+              SELECT DISTINCT created_at
+              FROM data_sentiment_count_per_day
+              limit 3
+          ),
+          data_grouping as (
+              SELECT
+                  ad.created_at,
+                  al.sentiment,
+                  COALESCE(yt.count, 0) AS count
+              FROM
+                  data_all_dates ad
+              CROSS JOIN
+                  data_labels_sentiment al
+              LEFT JOIN
+                  data_sentiment_count_per_day yt
+                  ON ad.created_at = yt.created_at AND al.sentiment = yt.sentiment
+              ORDER BY
+                  ad.created_at, al.sentiment
+          )
+          select
+              * from data_grouping
+          order by created_at desc;
+      `
+
+      const chartsResult = await db.sequelize.query(
+        query,
+        {
+          // replacements: { requestDate: requestDate },
+          type: db.sequelize.SELECT
+        }
+      );
+      responseQuery = chartsResult[0]
     }
 
     if (!res) {
