@@ -203,6 +203,23 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   const id = req.params.id;
 
+  TopicScrapeRequest.findByPk(id)
+    .then((data) => {
+      if (!data) throw Error('Data empty')
+
+      // Status: IN_QUEUE | IN_PROGRESS | FINISHED | FAILED
+      // TODO: Throw when topic is not on IN_QUEUE
+      if (data?.status !== "IN_QUEUE") throw Error('Request not in queue!')
+    })
+    .catch((err) => {
+      responseApiUtil(res, {
+        success: false,
+        status: 500,
+        clientCode: ClientCode.FAILED_FETCH,
+        message: err.message || `Error retrieving Scrape Request with id=${id}`,
+      })
+    });
+
   TopicScrapeRequest.destroy({
     where: {
       id: id,
