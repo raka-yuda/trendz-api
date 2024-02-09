@@ -253,9 +253,10 @@ exports.chart = async (req, res) => {
           tsr.id "request_id"
           from tweets
       inner join trending_topics tt on tt.id = tweets.topic_id
-      inner join topics_scrape_request tsr on tsr.id = tweets.topic_scrape_request `
+      inner join topics_scrape_request tsr on tsr.id = tweets.topic_scrape_request 
+      where sentiment is not null `
 
-      if (requestId) query += `where tsr.id = :requestId `
+      if (requestId) query += `and tsr.id = :requestId `
 
       query += `group by sentiment, tt.topic, tsr.query, tsr.topic_id, tsr.id order by count desc`
 
@@ -294,13 +295,6 @@ exports.chart = async (req, res) => {
     }
 
     if (type === CHART_TYPE.COUNT_SCRAPE_SENTIMENT_PER_DAY) {
-      const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-      // Test if the dateString matches the expected format
-      // if (!dateFormatRegex.test(requestDate)) {
-      //   throw new Error('Invalid date format. Please use the format yyyy-mm-dd.');
-      // }
-
       const query = `
         with
           data_labels_sentiment AS (
@@ -355,6 +349,38 @@ exports.chart = async (req, res) => {
       responseQuery = chartsResult[0]
     }
 
+    if (type === CHART_TYPE.DASHBOARD_DATA) {
+
+      const dashboardDataResult = await db.sequelize.query(
+        `SELECT
+            'count_topic_scrape' AS type,
+            count(1) AS count
+        FROM topics_scrape_request
+        UNION
+        SELECT
+            'count_sentiment_scrape' AS type,
+            count(1) AS count
+        FROM tweets
+        where sentiment is not null
+        UNION
+        SELECT
+            'count_failed_sentiment' AS type,
+            count(1) AS count
+        FROM tweets
+        where sentiment is null
+        UNION
+        SELECT
+            'count_success_topic_scrape' AS type,
+            count(1) AS count
+        FROM topics_scrape_request
+        where status = 'FINISHED'`,
+        {
+          type: db.sequelize.SELECT
+        }
+      );
+      responseQuery = dashboardDataResult[0]
+    }
+
     if (!res) {
       throw new Error('Data Not Found')
     }
@@ -368,7 +394,6 @@ exports.chart = async (req, res) => {
     })
 
   } catch (err) {
-    console.log(err)
     responseApiUtil(res, {
       success: false,
       status: 500,

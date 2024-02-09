@@ -210,44 +210,34 @@ exports.delete = (req, res) => {
       // Status: IN_QUEUE | IN_PROGRESS | FINISHED | FAILED
       // TODO: Throw when topic is not on IN_QUEUE
       if (data?.status !== "IN_QUEUE") throw Error('Request not in queue!')
-    })
-    .catch((err) => {
-      responseApiUtil(res, {
-        success: false,
-        status: 500,
-        clientCode: ClientCode.FAILED_FETCH,
-        message: err.message || `Error retrieving Scrape Request with id=${id}`,
-      })
-    });
 
-  TopicScrapeRequest.destroy({
-    where: {
-      id: id,
-    },
-  })
-    .then((num) => {
-      if (num == 1) {
-        responseApiUtil(res, {
-          success: true,
-          status: 200,
-          clientCode: ClientCode.SUCCESS_DELETED,
-          message: "Scrape Request was deleted successfully!",
+      TopicScrapeRequest.destroy({
+        where: {
+          id: id,
+        },
+      })
+        .then((num) => {
+          if (num == 1) {
+            responseApiUtil(res, {
+              success: true,
+              status: 200,
+              clientCode: ClientCode.SUCCESS_DELETED,
+              message: "Scrape Request was deleted successfully!",
+            })
+          } else {
+            throw Error(`Cannot delete Scrape Request with id=${id}. Maybe Scrape Request was not found!`);
+          }
         })
-      } else {
-        responseApiUtil(res, {
-          success: false,
-          status: 500,
-          clientCode: ClientCode.FAILED_DELETED,
-          message: `Cannot delete Scrape Request with id=${id}. Maybe Scrape Request was not found!`,
-        })
-      }
+        .catch((err) => {
+          throw Error(`Could not delete Scrape Request with id=${id}`);
+        });
     })
     .catch((err) => {
       responseApiUtil(res, {
         success: false,
         status: 500,
         clientCode: ClientCode.FAILED_DELETED,
-        message: `Could not delete Scrape Request with id=${id}`,
+        message: err.message || `Error retrieving Scrape Request with id=${id}`,
       })
     });
 };
