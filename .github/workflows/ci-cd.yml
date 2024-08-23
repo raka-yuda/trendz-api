@@ -29,16 +29,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: Build and Run Services
+      - name: Build Docker Images
         run: |
-          docker-compose up --build -d
+          docker-compose build
 
-      # - name: Run Tests
-      #   run: docker-compose exec app npm test
-
-      - name: Push Docker Image to GitHub Container Registry
+      - name: Push Docker Images to GitHub Container Registry
         run: |
-          docker-compose build app
           docker tag trendz-api:latest ghcr.io/${{ github.repository }}/trendz-api:latest
           docker push ghcr.io/${{ github.repository }}/trendz-api:latest
 
@@ -58,5 +54,5 @@ jobs:
           echo "DB_PASSWORD=$DB_PASSWORD" >> .env
           echo "$SSH_PRIVATE_KEY" > trendz-api-key
           chmod 600 trendz-api-key
-          ssh -i private_key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "cd /opt/trendz-api/app && docker-compose pull && docker-compose up -d"
-          rm private_key
+          ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "cd /opt/trendz-api/app && docker-compose pull && docker-compose up -d"
+          rm trendz-api-key
