@@ -12,29 +12,29 @@ module.exports = function (app) {
   });
 
   app.post(
-    "/api/scrape-request",
+    "/scrape-request",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin, validation.validateRequest(topicScrapeRequestDto)],
     controller.create
   );
 
   app.get(
-    "/api/scrape-request",
+    "/scrape-request",
     controller.findAll
   );
 
   app.get(
-    "/api/scrape-request/:id",
+    "/scrape-request/:id",
     controller.findOne
   );
 
   app.put(
-    "/api/scrape-request/:id",
+    "/scrape-request/:id",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin],
     controller.update
   );
 
   app.delete(
-    "/api/scrape-request/:id",
+    "/scrape-request/:id",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin],
     controller.delete
   );
