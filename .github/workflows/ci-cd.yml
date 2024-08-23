@@ -48,11 +48,15 @@ jobs:
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          echo "DB_NAME=$DB_NAME" >> .env
-          echo "DB_HOST=$DB_HOST" >> .env
-          echo "DB_USERNAME=$DB_USERNAME" >> .env
-          echo "DB_PASSWORD=$DB_PASSWORD" >> .env
           echo "$SSH_PRIVATE_KEY" > trendz-api-key
           chmod 600 trendz-api-key
-          ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "cd /opt/trendz-api/app && docker-compose pull && docker-compose up -d"
+          ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
+            export DB_NAME='$DB_NAME'
+            export DB_HOST='$DB_HOSTNAME'
+            export DB_USERNAME='$DB_USERNAME'
+            export DB_PASSWORD='$DB_PASSWORD'
+            cd /opt/trendz-api/app
+            docker-compose pull
+            docker-compose up -d
+          "
           rm trendz-api-key
