@@ -12,34 +12,34 @@ module.exports = function (app) {
   });
 
   app.post(
-    "/api/tweets",
+    "/tweets",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin, validation.validateRequest(tweetDto)],
     controller.create
   );
 
   app.get(
-    "/api/tweets",
+    "/tweets",
     controller.findAll
   );
 
   app.get(
-    "/api/tweets/chart",
+    "/tweets/chart",
     controller.chart
   );
 
   app.get(
-    "/api/tweets/:id",
+    "/tweets/:id",
     controller.findOne
   );
 
   app.put(
-    "/api/tweets/:id",
+    "/tweets/:id",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin],
     controller.update
   );
 
   app.delete(
-    "/api/tweets/:id",
+    "/tweets/:id",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin],
     controller.delete
   );

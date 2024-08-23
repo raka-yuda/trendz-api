@@ -12,29 +12,29 @@ module.exports = function (app) {
   });
 
   app.post(
-    "/api/trends",
+    "/trends",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin, validation.validateRequest(trendingTopicDto)],
     controller.create
   );
 
   app.get(
-    "/api/trends",
+    "/trends",
     controller.findAll
   );
 
   app.get(
-    "/api/trends/:id",
+    "/trends/:id",
     controller.findOne
   );
 
   app.put(
-    "/api/trends/:id",
+    "/trends/:id",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin],
     controller.update
   );
 
   app.delete(
-    "/api/trends/:id",
+    "/trends/:id",
     [authJwt.verifyToken, authJwt.isModeratorOrAdmin],
     controller.delete
   );
