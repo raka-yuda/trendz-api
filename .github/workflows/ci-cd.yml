@@ -35,8 +35,8 @@ jobs:
 
       - name: Push Docker Images to GitHub Container Registry
         run: |
-          docker tag trendz-api:latest ghcr.io/${{ github.repository }}/trendz-api:latest
-          docker push ghcr.io/${{ github.repository }}/trendz-api:latest
+          docker tag trendz-api:latest ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:latest
 
       - name: Deploy to Production Server
         env:
