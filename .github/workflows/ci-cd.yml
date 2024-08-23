@@ -55,5 +55,6 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > trendz-api-key
           chmod 600 trendz-api-key
           scp -i trendz-api-key -o StrictHostKeyChecking=no .env $SSH_USER@$SSH_HOST:/opt/trendz-api/app/.env
-          ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "cd /opt/trendz-api/app && docker-compose pull && docker-compose up -d"
+          ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "cd /opt/trendz-api/app && docker-compose pull && docker-compose -p trendz-api up --build -d"
           rm trendz-api-key
+
