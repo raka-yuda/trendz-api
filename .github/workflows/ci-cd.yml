@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  PROJECT_NAME: trendz-api
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,9 +32,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
 
+      - name: Validate Docker Compose configuration
+        run: docker-compose config
+      
       - name: Build Docker Images
         run: |
-          docker-compose build
+          docker-compose -p $PROJECT_NAME build
 
       - name: Push Docker Images to GitHub Container Registry
         run: |
@@ -55,6 +61,26 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > trendz-api-key
           chmod 600 trendz-api-key
           scp -i trendz-api-key -o StrictHostKeyChecking=no .env $SSH_USER@$SSH_HOST:/opt/trendz-api/app/.env
-          ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "cd /opt/trendz-api/app && docker-compose pull && docker-compose -p trendz-api up --build -d"
+          # ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "cd /opt/trendz-api/app && docker-compose pull && docker-compose -p trendz-api up --build -d"
+          ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << EOF
+            PROJECT_NAME="trendz-api"
+            cd /opt/trendz-api/app
+            
+            echo "Pruning unused Docker resources for ${PROJECT_NAME}"
+            docker container prune -f --filter "label=com.docker.compose.project=$PROJECT_NAME"
+            docker network prune -f --filter "label=com.docker.compose.project=$PROJECT_NAME"
+
+            docker-compose pull
+
+            echo "Starting Docker containers"
+            docker-compose -p $PROJECT_NAME up -d
+
+            echo "Cleaning up old Docker images for ${PROJECT_NAME}"
+            docker image prune -f --filter "label=com.docker.compose.project=$PROJECT_NAME"
+
+            echo "Reloading Nginx configuration for ${PROJECT_NAME}"
+            sudo nginx -t && sudo nginx -s reload
+            echo "Deployment completed"
+          EOF
           rm trendz-api-key
 
