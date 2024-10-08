@@ -37,7 +37,7 @@ var corsOptions = {
   origin: process.env.WHITELISTED_ORIGIN?.split(',') || "http://localhost:8081"
 };
 
-console.log(process.env.WHITELISTED_ORIGIN?.split(','))
+// console.log(process.env.WHITELISTED_ORIGIN?.split(','))
 
 app.use(cors(corsOptions));
 
