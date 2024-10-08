@@ -50,7 +50,7 @@ jobs:
 
       - name: Push Docker Images to GitHub Container Registry
         run: |
-          docker tag trendz-api:latest ghcr.io/${{ github.repository }}:latest
+          docker tag $PROJECT_NAME:latest ghcr.io/raka-yuda/trendz-api:latest
           docker push ghcr.io/${{ github.repository }}:latest
 
       - name: Deploy to Production Server
@@ -82,7 +82,7 @@ jobs:
             docker-compose pull
 
             echo "Starting Docker containers"
-            docker-compose -p $PROJECT_NAME up -d
+            docker-compose -p $PROJECT_NAME up -d --build
 
             echo "Cleaning up old Docker images for ${PROJECT_NAME}"
             docker image prune -f --filter "label=com.docker.compose.project=$PROJECT_NAME"
