@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   app:
-    image: trendz-api:latest
+    image: ghcr.io/raka-yuda/trendz-api:latest
     build: 
       context: .
       dockerfile: Dockerfile
