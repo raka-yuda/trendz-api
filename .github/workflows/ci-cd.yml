@@ -85,6 +85,8 @@ jobs:
           ssh -i trendz-api-key -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << EOF
             PROJECT_NAME="trendz-api"
             cd /opt/trendz-api/app
+
+            git pull origin main
             
             echo "Pruning unused Docker resources for ${PROJECT_NAME}"
             docker container prune -f --filter "label=com.docker.compose.project=$PROJECT_NAME"
