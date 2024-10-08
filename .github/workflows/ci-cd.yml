@@ -44,7 +44,7 @@ jobs:
 
       - name: Build Docker Images
         run: |
-          docker-compose -p $PROJECT_NAME build
+          docker-compose -p $PROJECT_NAME build --no-cache
 
       - name: Push Docker Images to GitHub Container Registry
         run: |
