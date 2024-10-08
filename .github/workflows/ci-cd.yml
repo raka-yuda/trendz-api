@@ -48,9 +48,12 @@ jobs:
         run: |
           docker-compose -p $PROJECT_NAME build --no-cache
 
-      - name: Push Docker Images to GitHub Container Registry
+      - name: Tag Docker Image
         run: |
           docker tag $PROJECT_NAME:latest ghcr.io/raka-yuda/trendz-api:latest
+
+      - name: Push Docker Images to GitHub Container Registry
+        run: |
           docker push ghcr.io/${{ github.repository }}:latest
 
       - name: Deploy to Production Server
