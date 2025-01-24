@@ -13,8 +13,16 @@ const validateRequest = (schema) => {
   };
 };
 
+const setCacheRequest = (maxAge) => {
+  return (req, res, next) => {
+    res.set('Cache-Control', `public, max-age=${maxAge.toString()}`);
+    next();
+  };
+};
+
 const validation = {
   validateRequest,
+  setCacheRequest,
 };
 
 module.exports = validation;

@@ -24,6 +24,7 @@ module.exports = function (app) {
 
   app.get(
     "/tweets/chart",
+    [validation.setCacheRequest(60)],
     controller.chart
   );
 
