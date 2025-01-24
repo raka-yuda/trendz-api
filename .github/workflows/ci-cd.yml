@@ -90,6 +90,9 @@ jobs:
             cd /opt/trendz-api/app
 
             git pull origin main
+
+            echo "Stopping and removing existing containers for ${PROJECT_NAME}"
+            docker-compose -p $PROJECT_NAME down || echo "No existing deployment to stop"
             
             echo "Pruning unused Docker resources for ${PROJECT_NAME}"
             docker container prune -f --filter "label=com.docker.compose.project=$PROJECT_NAME"
